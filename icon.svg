@@ -1,0 +1,6 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="64" cy="64" r="56" fill="#fff" stroke="#e53935" stroke-width="12"></circle>
+  <circle cx="64" cy="64" r="48" fill="#e53935"></circle>
+  <text x="64" y="82" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="48" font-weight="bold" fill="#fff">Ad</text>
+  <line x1="36" y1="36" x2="92" y2="92" stroke="#fff" stroke-width="10" stroke-linecap="round"></line>
+</svg>
