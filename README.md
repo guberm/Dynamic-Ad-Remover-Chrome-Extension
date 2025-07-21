@@ -135,7 +135,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-If you encounter any issues or have suggestions for improvements, please [open an issue](https://github.com/yourusername/dynamic-ad-remover/issues) on GitHub.
+If you encounter any issues or have suggestions for improvements, please [open an issue](https://github.com/guberm/dynamic-ad-remover/issues) on GitHub.
 
 ## Disclaimer
 
