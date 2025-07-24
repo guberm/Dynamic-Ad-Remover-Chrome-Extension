@@ -26,8 +26,8 @@ A lightweight Chrome extension that allows you to dynamically remove unwanted el
 
 ## Usage
 
-### Adding Selectors
-1. Click the extension icon in your browser toolbar
+### Configuring the Extension
+1. Click the extension icon in your browser toolbar to open settings
 2. In the "Selectors" textarea, add CSS selectors (one per line) for elements you want to remove
 3. Examples of common selectors:
    ```css
@@ -47,6 +47,13 @@ A lightweight Chrome extension that allows you to dynamically remove unwanted el
    github.com
    stackoverflow.com/questions/specific-page
    ```
+
+### Activating Ad Removal
+1. Configure your selectors and exclusions (see above)
+2. Click "Save" to store your settings
+3. Navigate to any webpage where you want to remove ads
+4. **Click the extension icon** to activate ad removal on that specific tab
+5. The extension will remove elements matching your selectors and monitor for new ones
 
 ### Save Settings
 1. Click the "Save" button to apply your changes
@@ -104,7 +111,7 @@ The extension requires the following permissions:
 
 - **storage**: To save your selector and exclusion settings
 - **scripting**: To inject content scripts that remove unwanted elements
-- **host_permissions**: `<all_urls>` to work on any website you visit
+- **activeTab**: To access the current tab when you click the extension icon
 
 ## Privacy
 
