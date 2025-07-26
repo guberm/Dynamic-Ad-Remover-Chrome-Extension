@@ -1,3 +1,8 @@
+// Clean up any existing observers when script is re-injected
+if (window.adRemoverObserver) {
+    window.adRemoverObserver.disconnect();
+}
+
 function getDomain(hostname) {
     return hostname.replace(/^www\./, '').toLowerCase();
 }
@@ -25,11 +30,24 @@ function shouldRun(excludes) {
 chrome.storage.sync.get(['selectors', 'excludes'], data => {
     const selectors = Array.isArray(data.selectors) ? data.selectors : [];
     const excludes = Array.isArray(data.excludes) ? data.excludes : [];
-    if (!selectors.length) return; // Do nothing if empty
-    if (!shouldRun(excludes)) return;
+    
+    console.log('Dynamic Ad Remover: Loaded selectors:', selectors);
+    
+    if (!selectors.length) {
+        console.log('Dynamic Ad Remover: No selectors configured');
+        return;
+    }
+    
+    if (!shouldRun(excludes)) {
+        console.log('Dynamic Ad Remover: Domain excluded');
+        return;
+    }
 
     removeAdElements(selectors);
 
-    const observer = new MutationObserver(() => removeAdElements(selectors));
-    observer.observe(document.body, { childList: true, subtree: true });
+    // Create new observer and store reference globally
+    window.adRemoverObserver = new MutationObserver(() => removeAdElements(selectors));
+    window.adRemoverObserver.observe(document.body, { childList: true, subtree: true });
+    
+    console.log('Dynamic Ad Remover: Started monitoring with', selectors.length, 'selectors');
 });

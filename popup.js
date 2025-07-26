@@ -13,7 +13,11 @@ document.getElementById('save').onclick = () => {
     const excludes = excBox.value.split('\n').map(s => s.trim()).filter(Boolean);
 
     chrome.storage.sync.set({ selectors, excludes }, () => {
-        status.textContent = 'Saved!';
-        setTimeout(() => { status.textContent = ''; }, 1200);
+        status.textContent = 'Saved! Settings updated on all active tabs.';
+        status.style.color = '#4caf50';
+        setTimeout(() => { 
+            status.textContent = ''; 
+            status.style.color = '';
+        }, 2500);
     });
 };
