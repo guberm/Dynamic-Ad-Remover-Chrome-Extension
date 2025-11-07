@@ -4,6 +4,25 @@
 // Track active tabs with injected scripts
 const activeTabs = new Set();
 
+// Default selectors from the Tampermonkey script
+const DEFAULT_SELECTORS = [];
+const DEFAULT_EXCLUDES = [];
+
+// Initialize default settings on install
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.storage.sync.get(['selectors', 'excludes'], (data) => {
+    // Only set empty defaults if nothing is configured
+    if (!data.selectors || data.selectors.length === 0) {
+      chrome.storage.sync.set({ 
+        selectors: [],
+        excludes: []
+      }, () => {
+        console.log('Dynamic Ad Remover: Initialized with empty defaults');
+      });
+    }
+  });
+});
+
 chrome.action.onClicked.addListener(async (tab) => {
   try {
     // Check if we can access this tab
@@ -50,9 +69,4 @@ chrome.storage.onChanged.addListener(async (changes, namespace) => {
 // Clean up closed tabs
 chrome.tabs.onRemoved.addListener((tabId) => {
   activeTabs.delete(tabId);
-});
-
-// Handle installation
-chrome.runtime.onInstalled.addListener(() => {
-  console.log('Dynamic Ad Remover installed');
 });

@@ -17,6 +17,12 @@ function removeAdElements(selectors) {
 
 function shouldRun(excludes) {
     const domain = getDomain(location.hostname);
+    
+    // Exit immediately on dev.azure.com (safety check from original script)
+    if (location.hostname === 'dev.azure.com') {
+        return false;
+    }
+    
     return !excludes.some(ex => {
         if (!ex) return false;
         if (ex.includes('/')) {
@@ -28,13 +34,13 @@ function shouldRun(excludes) {
 }
 
 chrome.storage.sync.get(['selectors', 'excludes'], data => {
-    const selectors = Array.isArray(data.selectors) ? data.selectors : [];
-    const excludes = Array.isArray(data.excludes) ? data.excludes : [];
+    const selectors = Array.isArray(data.selectors) && data.selectors.length > 0 ? data.selectors : [];
+    const excludes = Array.isArray(data.excludes) && data.excludes.length > 0 ? data.excludes : [];
     
-    console.log('Dynamic Ad Remover: Loaded selectors:', selectors);
+    console.log('Dynamic Ad Remover: Loaded selectors:', selectors.length);
     
     if (!selectors.length) {
-        console.log('Dynamic Ad Remover: No selectors configured');
+        console.log('Dynamic Ad Remover: No selectors configured. Please open the extension popup to configure.');
         return;
     }
     
@@ -43,6 +49,7 @@ chrome.storage.sync.get(['selectors', 'excludes'], data => {
         return;
     }
 
+    // Initial cleanup
     removeAdElements(selectors);
 
     // Create new observer and store reference globally

@@ -2,11 +2,21 @@
   "manifest_version": 3,
   "name": "Dynamic Ad Remover",
   "description": "Removes elements by user-configurable selectors. Exclude domains as needed.",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "permissions": [
     "storage",
     "scripting",
     "activeTab"
+  ],
+  "host_permissions": [
+    "*://*/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["*://*/*"],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
   ],
   "action": {
     "default_popup": "popup.html",
