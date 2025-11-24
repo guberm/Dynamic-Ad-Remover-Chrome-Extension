@@ -3,16 +3,34 @@ if (window.adRemoverObserver) {
     window.adRemoverObserver.disconnect();
 }
 
+// Track removed elements count
+let removedCount = 0;
+
 function getDomain(hostname) {
     return hostname.replace(/^www\./, '').toLowerCase();
 }
 
 function removeAdElements(selectors) {
+    let count = 0;
     selectors.forEach(sel => {
         try {
-            document.querySelectorAll(sel).forEach(el => el.remove());
+            document.querySelectorAll(sel).forEach(el => {
+                el.remove();
+                count++;
+            });
         } catch (e) {}
     });
+    
+    if (count > 0) {
+        removedCount += count;
+        // Send the updated count to the background script
+        chrome.runtime.sendMessage({
+            type: 'updateBadge',
+            count: removedCount
+        }).catch(() => {
+            // Ignore errors if background script is not ready
+        });
+    }
 }
 
 function shouldRun(excludes) {

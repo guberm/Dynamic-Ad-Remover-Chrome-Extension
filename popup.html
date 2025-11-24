@@ -21,6 +21,11 @@
   <label>Exclude Domains/Hosts (one per line):</label>
   <textarea id="excludes" placeholder="e.g. dev.azure.com"></textarea>
   <button id="save">Save</button>
+  <div style="display: flex; gap: 5px; margin-top: 8px;">
+    <button id="export" style="flex: 1;">Export Config</button>
+    <button id="import" style="flex: 1;">Import Config</button>
+  </div>
+  <input type="file" id="fileInput" accept=".json" style="display: none;">
   <div id="status"></div>
   <script src="popup.js"></script>
 </body>
