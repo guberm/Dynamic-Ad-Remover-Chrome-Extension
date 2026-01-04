@@ -51,9 +51,44 @@ function shouldRun(excludes) {
     });
 }
 
-chrome.storage.sync.get(['selectors', 'excludes'], data => {
-    const selectors = Array.isArray(data.selectors) && data.selectors.length > 0 ? data.selectors : [];
-    const excludes = Array.isArray(data.excludes) && data.excludes.length > 0 ? data.excludes : [];
+function getConfigForCurrentSite(siteConfigs) {
+    const currentDomain = getDomain(location.hostname);
+    
+    // Check if there's a specific config for this domain
+    if (siteConfigs[currentDomain]) {
+        console.log('Dynamic Ad Remover: Using site-specific config for', currentDomain);
+        return siteConfigs[currentDomain];
+    }
+    
+    // Otherwise, use global config
+    if (siteConfigs['*']) {
+        console.log('Dynamic Ad Remover: Using global config (*)');
+        return siteConfigs['*'];
+    }
+    
+    // Fallback to empty config
+    return { selectors: [], excludes: [] };
+}
+
+chrome.storage.sync.get(['siteConfigs', 'selectors', 'excludes'], data => {
+    let siteConfigs;
+    
+    // Migration: support old format
+    if (!data.siteConfigs && (data.selectors || data.excludes)) {
+        siteConfigs = {
+            '*': {
+                selectors: data.selectors || [],
+                excludes: data.excludes || []
+            }
+        };
+    } else {
+        siteConfigs = data.siteConfigs || { '*': { selectors: [], excludes: [] } };
+    }
+    
+    // Get the appropriate config for this site
+    const config = getConfigForCurrentSite(siteConfigs);
+    const selectors = Array.isArray(config.selectors) ? config.selectors : [];
+    const excludes = Array.isArray(config.excludes) ? config.excludes : [];
     
     console.log('Dynamic Ad Remover: Loaded selectors:', selectors.length);
     

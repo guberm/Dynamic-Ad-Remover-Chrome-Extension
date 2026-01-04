@@ -3,6 +3,9 @@ const excBox = document.getElementById('excludes');
 const status = document.getElementById('status');
 const siteDropdown = document.getElementById('siteDropdown');
 const currentSiteInfo = document.getElementById('currentSiteInfo');
+const siteListContainer = document.getElementById('siteList');
+const selectorCount = document.getElementById('selectorCount');
+const excludeCount = document.getElementById('excludeCount');
 
 let currentSite = '*';
 let siteConfigs = {};
@@ -28,6 +31,15 @@ async function getCurrentTabDomain() {
         console.error('Error getting current tab:', e);
     }
     return null;
+}
+
+// Update stats
+function updateStats() {
+    const selectors = selBox.value.split('\n').filter(s => s.trim()).length;
+    const excludes = excBox.value.split('\n').filter(s => s.trim()).length;
+    
+    selectorCount.textContent = selectors;
+    excludeCount.textContent = excludes;
 }
 
 // Load all site configurations
@@ -62,7 +74,7 @@ function updateSiteDropdown() {
     // Add global option
     const globalOption = document.createElement('option');
     globalOption.value = '*';
-    globalOption.textContent = '* All Sites (Global)';
+    globalOption.textContent = '⭐ All Sites (Global)';
     siteDropdown.appendChild(globalOption);
     
     // Add all configured sites
@@ -83,6 +95,72 @@ function updateSiteDropdown() {
     }
 }
 
+// Update site list display
+function updateSiteList() {
+    siteListContainer.innerHTML = '';
+    
+    const sites = Object.keys(siteConfigs).sort((a, b) => {
+        if (a === '*') return -1;
+        if (b === '*') return 1;
+        return a.localeCompare(b);
+    });
+    
+    if (sites.length === 0) {
+        siteListContainer.innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">No sites configured</div>';
+        return;
+    }
+    
+    sites.forEach(site => {
+        const item = document.createElement('div');
+        item.className = 'site-item';
+        
+        const nameDiv = document.createElement('div');
+        nameDiv.className = site === '*' ? 'site-name global' : 'site-name';
+        nameDiv.textContent = site === '*' ? '⭐ Global (*)' : site;
+        
+        const actions = document.createElement('div');
+        actions.className = 'site-actions';
+        
+        const selectBtn = document.createElement('button');
+        selectBtn.className = 'btn-icon';
+        selectBtn.textContent = '✏️';
+        selectBtn.title = 'Edit';
+        selectBtn.onclick = () => {
+            siteDropdown.value = site;
+            loadSiteConfig(site);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+        
+        actions.appendChild(selectBtn);
+        
+        if (site !== '*') {
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'btn-icon delete-site';
+            deleteBtn.textContent = '🗑️';
+            deleteBtn.title = 'Delete';
+            deleteBtn.onclick = async () => {
+                if (confirm(`Delete configuration for ${site}?`)) {
+                    delete siteConfigs[site];
+                    await saveConfigs();
+                    updateSiteDropdown();
+                    updateSiteList();
+                    if (currentSite === site) {
+                        currentSite = '*';
+                        siteDropdown.value = '*';
+                        loadSiteConfig('*');
+                    }
+                    showStatus(`Deleted ${site}`, 'success');
+                }
+            };
+            actions.appendChild(deleteBtn);
+        }
+        
+        item.appendChild(nameDiv);
+        item.appendChild(actions);
+        siteListContainer.appendChild(item);
+    });
+}
+
 // Load configuration for selected site
 function loadSiteConfig(site) {
     currentSite = site;
@@ -92,16 +170,19 @@ function loadSiteConfig(site) {
     excBox.value = config.excludes.join('\n');
     
     if (site === '*') {
-        currentSiteInfo.textContent = 'Editing: Global configuration (applies to all sites)';
+        currentSiteInfo.textContent = 'Global configuration - applies to all sites';
     } else {
-        currentSiteInfo.textContent = `Editing: ${site} (overrides global config)`;
+        currentSiteInfo.textContent = `${site} - overrides global settings`;
     }
+    
+    updateStats();
 }
 
 // Initialize
 (async function init() {
     await loadConfigs();
     updateSiteDropdown();
+    updateSiteList();
     
     // Try to auto-select current tab's domain
     const tabDomain = await getCurrentTabDomain();
@@ -141,6 +222,7 @@ document.getElementById('addSite').onclick = async () => {
         
         await saveConfigs();
         updateSiteDropdown();
+        updateSiteList();
         siteDropdown.value = siteName;
         loadSiteConfig(siteName);
         showStatus(`Created configuration for ${siteName}`, 'success');
@@ -159,7 +241,8 @@ document.getElementById('save').onclick = async () => {
     siteConfigs[currentSite] = { selectors, excludes };
     
     await saveConfigs();
-    showStatus(`Saved configuration for ${currentSite === '*' ? 'all sites' : currentSite}`, 'success');
+    updateSiteList();
+    showStatus(`✓ Saved configuration for ${currentSite === '*' ? 'all sites' : currentSite}`, 'success');
 };
 
 // Helper to save configs
@@ -172,11 +255,10 @@ async function saveConfigs() {
 // Helper to show status messages
 function showStatus(message, type = 'success') {
     status.textContent = message;
-    status.style.color = type === 'error' ? '#f44336' : type === 'info' ? '#2196f3' : '#4caf50';
+    status.className = `show ${type}`;
     setTimeout(() => { 
-        status.textContent = ''; 
-        status.style.color = '';
-    }, 2500);
+        status.className = '';
+    }, 3000);
 }
 
 // Export configuration
@@ -195,7 +277,7 @@ document.getElementById('export').onclick = () => {
     a.click();
     URL.revokeObjectURL(url);
     
-    showStatus('Configuration exported!', 'info');
+    showStatus('✓ Configuration exported!', 'info');
 };
 
 // Import configuration
@@ -236,10 +318,11 @@ fileInput.onchange = (e) => {
             
             await saveConfigs();
             updateSiteDropdown();
+            updateSiteList();
             loadSiteConfig(currentSite);
-            showStatus('Configuration imported and saved!', 'success');
+            showStatus('✓ Configuration imported successfully!', 'success');
         } catch (error) {
-            showStatus('Error: Invalid JSON file - ' + error.message, 'error');
+            showStatus('✗ Error: ' + error.message, 'error');
         }
     };
     reader.readAsText(file);
@@ -247,5 +330,7 @@ fileInput.onchange = (e) => {
     // Reset file input
     fileInput.value = '';
 };
-    fileInput.value = '';
-};
+
+// Update stats on input
+selBox.addEventListener('input', updateStats);
+excBox.addEventListener('input', updateStats);
