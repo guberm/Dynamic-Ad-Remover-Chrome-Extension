@@ -4,29 +4,91 @@
   <meta charset="utf-8">
   <title>Dynamic Ad Remover</title>
   <style>
-    body { font-family: Arial, sans-serif; width:320px; margin: 10px; }
-    textarea { width:100%; height:90px; }
+    body { font-family: Arial, sans-serif; width:380px; margin: 10px; }
+    textarea { width:100%; height:90px; box-sizing: border-box; }
     label { font-weight: bold; display: block; margin-top: 10px; }
     button { margin-top: 8px; width: 100%; }
     .info { background: #e3f2fd; padding: 8px; border-radius: 4px; margin-bottom: 10px; font-size: 12px; }
+    .site-selector { 
+      display: flex; 
+      gap: 5px; 
+      margin-bottom: 10px; 
+      align-items: center;
+    }
+    #siteDropdown { 
+      flex: 1; 
+      padding: 5px; 
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    .btn-small { 
+      padding: 5px 10px; 
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .current-site { 
+      color: #2196f3; 
+      font-size: 11px; 
+      margin-top: 5px;
+    }
+    .site-list {
+      max-height: 120px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-top: 5px;
+      padding: 5px;
+      font-size: 12px;
+    }
+    .site-item {
+      padding: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #eee;
+    }
+    .site-item:last-child { border-bottom: none; }
+    .delete-site {
+      color: #f44336;
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+      padding: 0 5px;
+    }
+    .delete-site:hover { color: #d32f2f; }
   </style>
 </head>
 <body>
   <div class="info">
-    ✅ Extension runs automatically on all websites!<br>
-    Customize selectors below or use the pre-configured defaults.
+    ✅ Configure settings per website or globally (*)
   </div>
+  
+  <div class="site-selector">
+    <select id="siteDropdown">
+      <option value="*">* All Sites (Global)</option>
+    </select>
+    <button id="addSite" class="btn-small">+ New Site</button>
+  </div>
+  
+  <div id="currentSiteInfo" class="current-site"></div>
+  
   <label>Selectors (one per line):</label>
   <textarea id="selectors" placeholder="e.g. div#ad, .advert, ins.adsbygoogle"></textarea>
+  
   <label>Exclude Domains/Hosts (one per line):</label>
   <textarea id="excludes" placeholder="e.g. dev.azure.com"></textarea>
+  
   <button id="save">Save</button>
+  
   <div style="display: flex; gap: 5px; margin-top: 8px;">
     <button id="export" style="flex: 1;">Export Config</button>
     <button id="import" style="flex: 1;">Import Config</button>
   </div>
+  
   <input type="file" id="fileInput" accept=".json" style="display: none;">
+  
   <div id="status"></div>
+  
   <script src="popup.js"></script>
 </body>
 </html>

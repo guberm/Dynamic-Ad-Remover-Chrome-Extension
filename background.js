@@ -10,43 +10,48 @@ const DEFAULT_EXCLUDES = [];
 
 // Initialize default settings on install
 chrome.runtime.onInstalled.addListener(() => {
-  chrome.storage.sync.get(['selectors', 'excludes'], (data) => {
-    // Only set empty defaults if nothing is configured
-    if (!data.selectors || data.selectors.length === 0) {
+  chrome.storage.sync.get(['siteConfigs', 'selectors', 'excludes'], (data) => {
+    // Migration: convert old format to new format
+    if (!data.siteConfigs && (data.selectors || data.excludes)) {
       chrome.storage.sync.set({ 
-        selectors: [],
-        excludes: []
+        siteConfigs: {
+          '*': {
+            selectors: data.selectors || [],
+            excludes: data.excludes || []
+          }
+        }
       }, () => {
-        console.log('Dynamic Ad Remover: Initialized with empty defaults');
+        // Remove old keys
+        chrome.storage.sync.remove(['selectors', 'excludes']);
+        console.log('Dynamic Ad Remover: Migrated old config to new format');
+      });
+    } else if (!data.siteConfigs) {
+      // Initialize with empty global config
+      chrome.storage.sync.set({ 
+        siteConfigs: {
+          '*': { selectors: [], excludes: [] }
+        }
+      }, () => {
+        console.log('Dynamic Ad Remover: Initialized with empty global config');
       });
     }
   });
 });
 
+// Open side panel when extension icon is clicked
 chrome.action.onClicked.addListener(async (tab) => {
   try {
-    // Check if we can access this tab
-    if (tab.url.startsWith('chrome://') || tab.url.startsWith('chrome-extension://') || tab.url.startsWith('edge://') || tab.url.startsWith('about:')) {
-      console.log('Cannot run on browser internal pages');
-      return;
-    }
-
-    // Always re-inject to get latest settings
-    await chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      files: ['content.js']
-    });
-
-    activeTabs.add(tab.id);
-    console.log('Content script injected successfully');
+    // Open the side panel
+    await chrome.sidePanel.open({ windowId: tab.windowId });
+    console.log('Side panel opened');
   } catch (error) {
-    console.error('Failed to inject content script:', error);
+    console.error('Failed to open side panel:', error);
   }
 });
 
 // Listen for storage changes to update active tabs
 chrome.storage.onChanged.addListener(async (changes, namespace) => {
-  if (namespace === 'sync' && (changes.selectors || changes.excludes)) {
+  if (namespace === 'sync' && changes.siteConfigs) {
     console.log('Settings changed, updating active tabs');
     
     // Re-inject content script to all active tabs with new settings

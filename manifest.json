@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Dynamic Ad Remover",
   "description": "Removes elements by user-configurable selectors. Exclude domains as needed.",
-  "version": "1.0.4.1",
+  "version": "1.1.0",
   "icons": {
     "16": "icon16.png",
     "32": "icon32.png",
@@ -12,7 +12,8 @@
   "permissions": [
     "storage",
     "scripting",
-    "activeTab"
+    "activeTab",
+    "sidePanel"
   ],
   "host_permissions": [
     "*://*/*"
@@ -25,13 +26,15 @@
     }
   ],
   "action": {
-    "default_popup": "popup.html",
     "default_icon": {
       "16": "icon16.png",
       "32": "icon32.png",
       "48": "icon48.png",
       "128": "icon128.png"
     }
+  },
+  "side_panel": {
+    "default_path": "sidebar.html"
   },
   "background": {
     "service_worker": "background.js"
